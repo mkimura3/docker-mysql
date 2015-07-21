@@ -10,7 +10,18 @@ DB_REMOTE_ROOT_PASS=${DB_REMOTE_ROOT_PASS:-}
 DB_REMOTE_ROOT_HOST=${DB_REMOTE_ROOT_HOST:-"172.17.42.1"}
 
 # disable error log
-sed 's/^log_error/# log_error/' -i /etc/mysql/my.cnf
+#sed 's/^log_error/# log_error/' -i /etc/mysql/my.cnf
+
+# for Confluence Settings
+cat > /etc/mysql/conf.d/mysql-confluence.cnf <<EOF
+[mysqld]
+character-set-server=utf8
+collation-server=utf8_bin
+default-storage-engine=InnoDB
+max_allowed_packet=40M
+innodb_log_file_size=256M
+EOF
+
 
 # Fixing StartUp Porblems with some DNS Situations and Speeds up the stuff
 # http://www.percona.com/blog/2008/05/31/dns-achilles-heel-mysql-installation/
@@ -95,7 +106,7 @@ if [ -n "${DB_USER}" -o -n "${DB_NAME}" ]; then
     for db in $(awk -F',' '{for (i = 1 ; i <= NF ; i++) print $i}' <<< "${DB_NAME}"); do
       echo "Creating database \"$db\"..."
       mysql --defaults-file=/etc/mysql/debian.cnf \
-        -e "CREATE DATABASE IF NOT EXISTS \`$db\` DEFAULT CHARACTER SET \`utf8\` COLLATE \`utf8_unicode_ci\`;"
+        -e "CREATE DATABASE IF NOT EXISTS \`$db\` DEFAULT CHARACTER SET \`utf8\` COLLATE \`utf8_bin\`;"
         if [ -n "${DB_USER}" ]; then
           echo "Granting access to database \"$db\" for user \"${DB_USER}\"..."
           mysql --defaults-file=/etc/mysql/debian.cnf \
